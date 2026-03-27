@@ -28,24 +28,29 @@ The dataset used contain 12 months of ride data with over 5.8 million records.
 
 ## Files
 This repository is organized to reflect data analysis workflow, which consists of prepare, process, analysis, and share.
-
-
+<br>
 - scripts/01_preparation.R
+<br>
 Merges raw datasets and performs initial data structuring.
 
 - scripts/02_processing.R
+<br>
 Cleans the dataset by handling missing values, removing duplicates and invalid data, and adding new variables, such as ride length and day of week.
 
 - scripts/03_analyzing.R
+<br>
 Performs exploratory analysis and computes key statistics for insights.
 
 - report/cyclistic-report.docx
+<br>
 Full case study documentation, including business context, analysis, and recommendations.
 
 - report/sharing.Rmd
+<br>
 Generates visuals and communicates findings.
 
 - report/sharing.html
+<br>
 Renders report, containing charts and explanation.
 
 ## Dataset
