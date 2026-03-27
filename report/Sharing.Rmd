@@ -1,0 +1,138 @@
+---
+title: "Cyclistic Report Through Divvy Bikes 2024"
+author: "Ferry"
+date: "2026-02-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+library("dplyr")
+library("ggplot2")
+
+all_trips <- read_csv("D:/Learn/Data Analysis/Coursera/Case Study/BikeSharing/Data/cleaned_2024/all_trips_processed_2024.csv")
+
+# Add day of week when the trip record is appearing
+correct_level <- c(
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+)
+
+all_trips <- all_trips %>% 
+  mutate(
+    day_of_week = factor(day_of_week, levels = correct_level)
+  )
+```
+
+## Business Context
+
+#### Situation
+Cyclistic is a bike-share company seeking to **maximizing the number of annual memberships**. The marketing team wants to understand **how casual riders and annual members use Cyclistic bikes differently** to support their conversion strategy.
+
+#### Objective
+Understand how annual members and casual riders use Cyclistic bike differently based on ride history.
+
+#### Key Questions
+1. What is the proportion of rides made by annual members and casual riders in the past year?
+2. What patterns differentiate between annual members and casual riders?
+
+<br>
+
+## Ride Distribution
+```{r echo=FALSE}
+total_proportion <- all_trips %>% 
+  count(member_casual) %>% 
+  mutate(
+    percentage = scales::percent(n / sum(n))
+  )
+total_proportion %>% 
+  ggplot(aes(x = "", y = percentage, fill = member_casual)) + 
+  geom_bar(stat = "identity") +
+  coord_polar("y") +
+  geom_text(aes(label = percentage),
+            position = position_stack(vjust = 0.5),
+            size = 5,
+            fontface = "bold",
+            color = "white") +
+  scale_fill_manual(values = c("member" = "#1F3A8A", "casual" = "#F97316")) +
+  labs(
+    title = "Ride Distribution by Rider Type",
+    fill = "Rider Type"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(face = "bold"),
+  )
+
+```
+
+Over the past year, 37% of rides were made by casual riders, with 63% of rides by annual members. This indicates that **annual members are dominant in ride usage**. However, casual riders still make up for more than a third by usage, which opens for conversion opportunities.
+
+<br>
+
+## Median Ride Duration
+```{r echo=FALSE}
+hist(
+  all_trips$ride_length, 
+  breaks = 50, 
+  xlab = "Ride Length", 
+  main = "Ride Length Distribution"
+  )
+```
+
+Ride length data is right-skewed due to the presence of extreme long rides, resulting in a noticeable difference between mean and median values. Therefore, median is used to represent typical ride behavior and provide a fair comparison between casual riders and annual members.
+
+```{r echo=FALSE}
+median_distribution <- all_trips %>% 
+  group_by(member_casual, day_of_week) %>% 
+  summarise(
+    Median = median(ride_length, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+median_distribution %>% 
+  ggplot(aes(fill = member_casual, x = day_of_week, y = Median)) +
+  scale_fill_manual(values = c("member" = "#1F3A8A", "casual" = "#F97316")) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(
+    title = "Median Ride Duration by Day of Week",
+    fill = "Rider Type",
+    x = "Day of Week",
+    y = "Ride Length Median (Seconds)"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
+```
+
+**casual riders tend to take longer ride duration** on median, indicating a more relaxed usage, whereas **annual members are more efficient**.
+
+<br>
+
+## Weekly Ride Frequency
+```{r echo=FALSE}
+ride_frequency <- all_trips %>% 
+  group_by(member_casual, day_of_week) %>% 
+  summarise(
+    total_rides = n(),
+    .groups = "drop"
+  )
+
+ride_frequency %>% 
+  ggplot(aes(fill = member_casual, x = day_of_week, y = total_rides)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(values = c("member" = "#1F3A8A", "casual" = "#F97316")) +
+  labs(
+    title = "Number of Rides by Day of Week",
+    fill = "Rider Type",
+    x = "Day of Week",
+    y = "Rides"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
+```
+
+**Annual members demonstrate a consistent weekday** riding pattern, peaking on Wednesday (Mid-week), which **strongly suggests routine commuting behavior**. In contrast, **casual riders show significantly higher rides on weekends**, peaking on Saturday, indicating **leisure-oriented usage**.
+
